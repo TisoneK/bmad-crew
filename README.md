@@ -1,32 +1,37 @@
 # bmad-crew
 
-A BMAD custom module that reduces Coordinator cognitive load during multi-agent development sessions. The Advisor agent monitors for violations, enforces checkpoints, and provides exact instructions so you never have to think about what to tell an agent.
+A BMAD custom module that sits beside the Coordinator during development sessions, guiding every decision and instruction so the Coordinator never has to think about what to tell the Builder.
 
 ---
 
 ## The Problem
 
-When running multi-agent BMAD sessions, the Coordinator spends significant effort:
+In a BMAD multi-agent session, the Coordinator (developer) directs the Builder (Executor) through every phase of development. This means the Coordinator must constantly:
 
-- Correcting agents that step outside their role
-- Catching self-certified completions that were never committed
-- Remembering to produce summary files at phase boundaries
-- Deciding what to tell the Executor when it presents options
-- Verifying git claims before opening new sessions
+- Know which BMAD command to run next
+- Catch when the Builder self-certifies without committing
+- Remember to verify git status before opening new sessions
+- Decide which option to pick when the Builder presents choices
+- Produce summary files at phase boundaries
+- Track locked decisions so the Builder doesn't re-open them
 
-bmad-crew handles all of this automatically.
+This cognitive overhead accumulates. The Coordinator ends up spending more time managing the process than building the product.
 
 ---
 
-## How It Works
+## The Solution
 
-The **BMAD Crew Advisor** is a session supervisor that loads alongside your development session. It:
+```
+Advisor → Coordinator (developer) ← Builder
+```
 
-1. Asks for context before starting (sprint status, story file, architecture doc)
-2. Monitors for role, process, and quality violations in real time
-3. Enforces checkpoints before phase transitions
-4. Provides exact copy-pasteable instructions to the Coordinator
-5. Maintains locked decisions across sessions via persistent memory
+bmad-crew adds an **Advisor** to the session. The Advisor sits beside the Coordinator and handles the process management layer:
+
+- Tells the Coordinator exactly what to tell the Builder at each step
+- Catches process violations before the Coordinator notices them
+- Enforces checkpoints so the Coordinator never skips a gate
+- Tracks locked decisions so nothing gets re-opened
+- Verifies Builder claims independently before the Coordinator acts on them
 
 The Coordinator's only job becomes moving context between agents. The Advisor handles the rest.
 
@@ -36,8 +41,8 @@ The Coordinator's only job becomes moving context between agents. The Advisor ha
 
 ```
 _bmad/crew/
-├── config.yaml                          # Module configuration
-├── module-help.csv                      # Skill registry
+├── config.yaml
+├── module-help.csv
 └── skills/
     ├── bmad-crew-agent-advisor/         # Main Advisor agent (start here)
     ├── bmad-crew-advisor/               # Advisor workflow skill
@@ -50,22 +55,20 @@ _bmad/crew/
 
 ## Installation
 
-### Option 1: Clone into your project
-
-Copy the `_bmad/crew/` folder into your project's `_bmad/` directory:
+### Step 1 — Copy the module into your project
 
 ```
-_your-project/
+your-project/
 └── _bmad/
-    └── crew/        ← copy this from bmad-crew
+    └── crew/        ← copy from bmad-crew/_bmad/crew/
 ```
 
-Then copy the skills to your IDE's skill directory:
+### Step 2 — Copy skills to your IDE
 
 **Windsurf:**
 ```
-.windsurf/skills/bmad-crew-advisor/
 .windsurf/skills/bmad-crew-agent-advisor/
+.windsurf/skills/bmad-crew-advisor/
 .windsurf/skills/bmad-crew-session-validator/
 .windsurf/skills/bmad-crew-checkpoint-enforcer/
 .windsurf/skills/bmad-crew-locked-decisions/
@@ -76,9 +79,9 @@ Then copy the skills to your IDE's skill directory:
 .kilocode/skills/   ← same structure
 ```
 
-### Option 2: Register in manifest
+### Step 3 — Register the module
 
-Add to your project's `_bmad/_config/manifest.yaml`:
+Add to `_bmad/_config/manifest.yaml`:
 
 ```yaml
 - name: crew
@@ -88,13 +91,13 @@ Add to your project's `_bmad/_config/manifest.yaml`:
   repoUrl: null
 ```
 
-Add to `_bmad/_config/bmad-help.csv` — see `_bmad/crew/module-help.csv` for the entries.
+Add skills to `_bmad/_config/bmad-help.csv` — see `_bmad/crew/module-help.csv` for the entries.
 
 ---
 
 ## Usage
 
-Activate the Advisor at the start of any BMAD session:
+At the start of any BMAD session, activate the Advisor in a separate chat:
 
 ```
 /bmad-crew-agent-advisor
@@ -102,11 +105,15 @@ Activate the Advisor at the start of any BMAD session:
 
 The Advisor will:
 1. Load identity and memory
-2. Greet you by name
+2. Greet the Coordinator by name
 3. Ask for minimum context (sprint status or story file)
-4. Begin monitoring once context is loaded
+4. Begin guiding the Coordinator once context is loaded
 
-### Available Skills
+From that point, every instruction the Coordinator gives to the Builder comes from the Advisor — not from the Coordinator having to figure it out themselves.
+
+---
+
+## Available Skills
 
 | Command | Purpose |
 |---------|---------|
@@ -123,8 +130,8 @@ The Advisor will:
 The Advisor operates under three absolute rules that cannot be overridden:
 
 1. **NEVER confirm a document without reading it**
-2. **NEVER accept git claims without log verification**
-3. **NEVER cross the Coordinator/Executor boundary**
+2. **NEVER accept Builder git claims without log verification**
+3. **NEVER cross the Coordinator/Builder boundary**
 
 ---
 
@@ -143,7 +150,7 @@ The Advisor operates under three absolute rules that cannot be overridden:
 
 Post-MVP roadmap:
 - Executor module
-- Coordinator module  
+- Coordinator module
 - Specialist module
 - npm publishing for BMAD installer integration
 
