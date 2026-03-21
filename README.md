@@ -95,6 +95,30 @@ Add skills to `_bmad/_config/bmad-help.csv` — see `_bmad/crew/module-help.csv`
 
 ---
 
+## Exporting to Another Project
+
+To use bmad-crew in an existing BMAD project:
+
+### 1. Copy the module
+Copy `_bmad/crew/` and `_bmad/bmad-crew/` from this repo into your project's `_bmad/` folder.
+
+### 2. Copy the IDE skills
+Copy `.windsurf/skills/bmad-crew-*` into your project's `.windsurf/skills/`.
+For Kilo Code, copy into `.kilocode/skills/`.
+
+### 3. Register the module
+Add the crew entry to your project's `_bmad/_config/manifest.yaml`
+and append the skill entries from `_bmad/crew/module-help.csv` to your project's
+`_bmad/_config/bmad-help.csv`.
+
+### 4. Restart your IDE
+Restart your IDE so it discovers the new skills from the skills directory.
+
+### 5. Activate
+Open a new chat and run `/bmad-crew-agent-advisor`.
+
+---
+
 ## Usage
 
 At the start of any BMAD session, activate the Advisor in a separate chat:
