@@ -73,7 +73,12 @@
    - Memory persistence for session state and locked decisions
    ```
 
-5. **Create index.md:**
+5. **Detect platform and Python binary:**
+   Run `python3 --version`. If it succeeds use `python3`; otherwise use `python`.
+   Run `python3 -c "import platform; print(platform.system())"` (or `python`) to get the OS.
+   Store both results — they are written into `index.md` in the next step and never re-detected.
+
+6. **Create index.md:**
    ```markdown
    # BMAD Crew Advisor Configuration
 
@@ -81,6 +86,10 @@
    - User Name: {user_name}
    - Communication Language: {communication_language}
    - Document Output Language: {document_output_language}
+
+   ## Platform
+   - OS: [Windows | macOS | Linux]
+   - Python Binary: [python | python3]
 
    ## Paths
    - Session Reports: {bmad_builder_output_folder}/bmad-crew-sessions/

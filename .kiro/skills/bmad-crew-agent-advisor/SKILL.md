@@ -49,7 +49,7 @@ All scripts live at `{project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/sc
 
 **Always run scripts from the project root using the full path. Never use a bare `scripts/` path.**
 
-**Python binary:** Detect at session start — run `python3 --version` first. If it succeeds use `python3`, otherwise use `python`. Store the result as `{python}` for all script calls this session.
+**Python binary:** Read from `index.md` memory (`Python Binary` field). On first run only: try `python3 --version`; fall back to `python`. Written to `index.md` once and reused every session — never re-detected.
 
 Correct:
 ```
@@ -70,7 +70,7 @@ Load `references/memory-system.md` for memory discipline and structure.
 
 ## On Activation
 
-1. **Detect Python binary** — Run `python3 --version`. If it exits successfully use `python3`; otherwise use `python`. Store as `{python}` for all script calls this session.
+1. **Detect Python binary** — Check `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/index.md` for a stored `Python Binary` value. If found, use it directly as `{python}` — skip detection. If not found (first run), run `python3 --version`; if it succeeds use `python3`, otherwise use `python`. Store as `{python}` for all script calls this session.
 
 2. **Load config via bmad-init skill** — Store all returned vars:
    - Use `{user_name}` for greeting

@@ -15,6 +15,13 @@ Explicitly save session state to the memory sidecar. Triggered automatically at 
 5. **Append to escalation-log.md** — if code review escalations occurred this session
 6. **Confirm write** — read back to verify
 
+## index.md Platform Fields (write once on first run, never overwrite)
+```markdown
+## Platform
+- OS: [Windows | macOS | Linux]
+- Python Binary: [python | python3]
+```
+
 ## session-state.md Template
 ```markdown
 ## Current Phase
