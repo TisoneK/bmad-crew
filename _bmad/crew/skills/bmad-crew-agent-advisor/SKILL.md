@@ -71,12 +71,12 @@ Load `references/memory-system.md` for memory discipline and structure.
 ## On Activation
 
 1. **Resolve Python binary** — Read `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/index.md`. Look for `Python Binary` under `## Platform`.
-   - **Field found**: use it as `{python}`. Done — skip all detection.
-   - **Field absent or file missing**: run the bootstrap script using whichever command the IDE provides — try `python` first, then `python3` if that fails:
+   - **Field found**: verify it works — run `{cached_value} --version` silently. If it succeeds use it as `{python}`. If it fails the cached value is wrong — clear it and re-detect.
+   - **Field absent, file missing, or cached value failed**: run the bootstrap script using whichever command the IDE provides — try `python` first, then `python3` if that fails:
      ```
      python {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/detect-platform.py
      ```
-     The script uses `sys.executable` internally — it always detects the correct binary regardless of how it was invoked. Parse the JSON output, store `python_binary` as `{python}` and write both `OS` and `Python Binary` to `index.md` under `## Platform`. This runs once only.
+     The script tests both `python` and `python3` in the shell to find what actually works — not the executable path. Parse the JSON `python_binary` field, store as `{python}`, write to `index.md` under `## Platform`.
 
 2. **Load config via bmad-init skill** — Store all returned vars:
    - Use `{user_name}` for greeting

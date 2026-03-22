@@ -118,6 +118,50 @@ Every command that produces output files must be followed by a commit before a n
 
 ---
 
+
+---
+
+## BMB Workflow — Building Agents, Workflows, and Modules
+
+BMB projects produce markdown prompt files and YAML configs — no code, no tests, no linting, no sprint-status.yaml, no stories.
+
+### Build Phase
+| Command | New chat? | Produces output? | Output location |
+|---------|-----------|-----------------|-----------------|
+| `/bmad-workflow-builder` | Yes | Yes | `bmad-builder-creations/` |
+| `/bmad-agent-builder` | Yes | Yes | `bmad-builder-creations/` |
+| `/bmad-module-builder` | Yes | Yes | `bmad-builder-creations/` |
+
+### Optimize Phase (optional)
+| Command | New chat? | Produces output? | Output location |
+|---------|-----------|-----------------|-----------------|
+| Re-run builder in optimize mode | Yes | Yes | Updated skill files |
+| Quality scan on built components | Yes | Yes | Quality report |
+
+### Distribute Phase
+Manual steps — no BMAD command:
+1. Copy built skills to IDE folder (`.windsurf/skills/`, `.kiro/skills/`, `.github/skills/`)
+2. Register module in `_bmad/_config/manifest.yaml`
+3. Register skills in `_bmad/_config/skill-manifest.csv`
+4. Register skills in `_bmad/_config/bmad-help.csv`
+5. Commit and push
+
+### BMB Commit Checkpoint
+Every builder session that produces output requires a commit before a new session opens. Same rule as BMM — different artifacts, same gate.
+
+### How to Detect Current BMB Phase
+- `bmad-builder-creations/` exists and has content → build phase complete or in progress
+- Skills appear in `_bmad/[module]/skills/` → installed, may need optimize or distribute
+- Skills appear in IDE folders (`.windsurf/skills/` etc.) → distributed
+- Skills in `_bmad/_config/skill-manifest.csv` → registered
+
+### BMB vs BMM — Key Difference
+BMM builds what the software does. BMB builds who the agents are and how they behave.
+BMB has no stories, no sprints, no dev-story cycles. The builders are interactive and guided.
+Never suggest sprint planning, story creation, or dev-story for a BMB project.
+
+---
+
 ## Output Format for Next-Step Instructions
 
 After any gate passes, the Advisor gives exactly this format:

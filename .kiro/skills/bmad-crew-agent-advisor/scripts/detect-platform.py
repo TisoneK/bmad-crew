@@ -4,8 +4,7 @@
 # ///
 """
 Platform detection bootstrap for BMAD Crew Advisor.
-Run this once on first activation to detect OS and python binary.
-Works with both `python` and `python3` — whichever resolves on this machine.
+Determines the shell-invokable python binary by actually testing both commands.
 
 Usage:
   python detect-platform.py
@@ -18,17 +17,33 @@ Output (JSON):
 import sys
 import platform
 import json
+import subprocess
 
-os_name = platform.system()          # Windows | Darwin | Linux
+os_name = platform.system()
 py_version = platform.python_version()
 
-# Determine which binary was used to invoke this script
-# sys.executable gives the full path; we just need the name
-exe = sys.executable
-if "python3" in exe.lower():
+def can_invoke(cmd):
+    """Test whether a command name actually works in the shell."""
+    try:
+        result = subprocess.run(
+            [cmd, "--version"],
+            capture_output=True,
+            timeout=5
+        )
+        return result.returncode == 0
+    except (FileNotFoundError, OSError):
+        return False
+
+# Test shell-invokable names in order of preference
+# We are already running inside python, so at least one of these will work.
+# We want the shortest name that the shell can find.
+if can_invoke("python"):
+    binary = "python"
+elif can_invoke("python3"):
     binary = "python3"
 else:
-    binary = "python"
+    # Absolute fallback: use the full executable path that launched this script
+    binary = sys.executable
 
 result = {
     "os": os_name,
