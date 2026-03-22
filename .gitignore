@@ -1,0 +1,12 @@
+# Backup folders created during upgrades
+_bmad/crew/skills/*-backup/
+_bmad/crew/skills/bmad-crew-agent-advisor-pre-*/
+_bmad/crew-v*-backup/
+
+# Build staging folders — never ship in consumer projects
+_bmad/crew/skills/bmad-crew-agent-advisor/bmad-crew-agent-advisor-v*/
+bmad-builder-creations/bmad-crew-agent-advisor-v0.2.0-complete/
+
+# OS
+.DS_Store
+Thumbs.db
