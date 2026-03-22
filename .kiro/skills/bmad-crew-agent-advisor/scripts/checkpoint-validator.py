@@ -10,6 +10,8 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 
 def validate_artifact_exists(artifact_path: str, artifact_type: str, required: bool = True) -> dict:

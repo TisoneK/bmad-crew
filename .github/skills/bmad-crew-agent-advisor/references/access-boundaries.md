@@ -13,8 +13,11 @@
 
 ## Write Access
 - `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/` — own memory only
+- `{project-root}/_bmad-output/bmad-crew-sessions/` — session reports, mistakes files, summaries (use this path directly if {bmad_builder_output_folder} is unresolved)
 - `{bmad_builder_output_folder}/bmad-crew-sessions/` — session reports, mistakes files, summaries
 - `{project-root}/_bmad/bmad-crew/locked-decisions.md` — locked decisions updates only
+
+**Note:** If `{bmad_builder_output_folder}` is not resolved, default to `{project-root}/_bmad-output/` as the output folder. The Advisor has explicit write permission to this path.
 
 ## Deny Zones
 - No direct code writing or modification

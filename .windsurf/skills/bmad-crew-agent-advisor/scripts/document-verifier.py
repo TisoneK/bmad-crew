@@ -15,6 +15,8 @@ import os
 import re
 import sys
 from pathlib import Path
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 from typing import Dict, List, Optional, Tuple
 
 class DocumentVerifier:

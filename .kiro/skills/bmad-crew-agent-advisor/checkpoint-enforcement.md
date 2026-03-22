@@ -76,12 +76,15 @@ Required before giving the code-review instruction:
 4. ✓ Locked decisions re-read (IDEA-012)
 
 ### code-review → next create-story
-Required before giving the next create-story instruction:
-1. ✓ All patch findings addressed and committed
-2. ✓ No unresolved bad_spec or intent_gap findings
-3. ✓ Commit hash confirmed for all patches
-4. ✓ Mistakes file generated (IDEA-001)
-5. ✓ Phase summary file produced (IDEA-008)
+Execute these steps IN ORDER before giving the next create-story instruction:
+
+1. Verify all patch findings addressed and committed — check git log for patch commit hash
+2. Verify no unresolved bad_spec or intent_gap findings
+3. **GENERATE mistakes file now** — do not skip, do not ask — write `ADVISOR_SESSION_MISTAKES_NNN.md` to `{bmad_builder_output_folder}/bmad-crew-sessions/` using mistakes-file.md instructions
+4. **GENERATE summary file now** — do not skip, do not ask — write `SUM-00X-[project]-advisor-story-[N]-summary.md` to `{bmad_builder_output_folder}/bmad-crew-sessions/` using the Phase Summary Files template below
+5. Only after both files are written: tell the Coordinator to instruct the Builder to update sprint-status.yaml and commit, then give the create-story command
+
+The Advisor writes these files itself. It does not ask the Coordinator to generate them.
 
 ## Phase Summary Files (IDEA-008)
 
@@ -140,6 +143,22 @@ On detection:
 2. If not: generate summary file before yielding
 3. Offer the next-command instruction
 4. Update session-state.md with session end timestamp
+
+## Session Scope Rule
+
+**One Advisor session = one story cycle.**
+
+After giving the create-story command, the Advisor ends its own session:
+
+```
+Session complete for story [N.M]. Close this chat.
+
+Open a fresh Advisor session for the next story:
+
+/bmad-crew-agent-advisor
+```
+
+This is mandatory. Context drift in long sessions causes the Advisor to lose its rules and improvise. Short sessions keep context clean.
 
 ## Checkpoint Response Formats
 

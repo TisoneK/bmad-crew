@@ -1,7 +1,21 @@
 # Instruction Generation
 
 ## Purpose
-Generate exact Coordinator instructions after gates pass. One line of plain text, one command in a code block. No options menus. No step-by-step when one line covers it.
+Generate exact Coordinator instructions after gates pass.
+
+## Role Reminder (re-read this on every instruction you generate)
+
+The Advisor gives instructions TO the Coordinator to pass TO the Builder.
+The Advisor never:
+- Acts directly on the project (no file writes outside sidecar)
+- Tells the Coordinator to do the Builder's work manually
+- Updates sprint-status.yaml, source files, or project artifacts itself
+
+When the Advisor cannot write a file, the correct response is ALWAYS:
+```
+Tell the Builder: [exact instruction]
+```
+Never: "You update it manually" — that's the Builder's job. One line of plain text, one command in a code block. No options menus. No step-by-step when one line covers it.
 
 ## Output Format (IDEA-005)
 
@@ -132,16 +146,26 @@ The flag does not change the instruction — it adds one sentence telling the Co
 
 ## Standard Instruction Templates
 
-### Next story command
+**Rule: when a commit is required before the next command, always give the commit command in its own code block first. Never combine commit instruction and next command into one sentence.**
+
+### After story validation — proceed to dev-story
 ```
-[Story N.M] validated. Commit the story file, then open a new chat and run:
+Story [N.M] validated.
+
+Tell the Builder: commit all changes from this session.
+
+Once the Builder confirms the commit, open a new chat and run:
 
 /bmad-bmm-dev-story
 ```
 
-### Next code review
+### After dev-story — proceed to code review
 ```
-Implementation committed ([hash]). Open a new chat and run:
+Implementation complete.
+
+Tell the Builder: commit all changes from this session.
+
+Once the Builder confirms the commit, open a new chat and run:
 
 /bmad-bmm-code-review
 ```
@@ -161,3 +185,47 @@ Open a new chat and run:
 
 /bmad-[next-phase-command]
 ```
+
+### After Builder produces code review sub-agent files
+
+The Builder has created three review prompt files and halted. The sub-agents must be run manually. The Advisor gives the exact sequence — no options:
+
+```
+Review files created. Open a new chat for each sub-agent:
+
+Chat 1 — open the file and run it:
+_bmad-output/implementation-artifacts/review-blind-hunter-[story].md
+
+Chat 2:
+_bmad-output/implementation-artifacts/review-edge-case-hunter-[story].md
+
+Chat 3:
+_bmad-output/implementation-artifacts/review-acceptance-auditor-[story].md
+
+Paste all three findings back here when done.
+```
+
+The Advisor waits for findings. Once all three are pasted, it validates the triage and classifies each finding (patch/defer/intent_gap/bad_spec).
+
+### After receiving code review triage with patch findings
+
+When triage shows patch findings and no bad_spec or intent_gap:
+
+```
+[N] patch findings to fix in this review session.
+
+Tell the Builder: fix all [N] patch issues from the triage.
+
+Once the Builder confirms fixes are done, tell the Builder: commit all changes from this session.
+
+Paste the commit hash here when complete.
+```
+
+Do not list the patch items again — the Builder already has the triage.
+Do not combine fix and commit into one instruction — they are separate steps.
+Do not say "run next story" until the commit hash is verified.
+
+When the Coordinator pastes a commit hash back:
+1. Verify with git-validator
+2. If clean: generate mistakes file, then give next-story command
+3. If not clean: block and ask for the correct hash

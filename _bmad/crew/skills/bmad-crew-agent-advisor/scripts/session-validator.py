@@ -19,6 +19,8 @@ import json
 import argparse
 from pathlib import Path
 from datetime import datetime
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 
 def find_project_root() -> Path:

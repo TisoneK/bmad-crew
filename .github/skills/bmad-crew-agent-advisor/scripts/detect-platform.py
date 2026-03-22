@@ -17,6 +17,8 @@ Output (JSON):
 import sys
 import platform
 import json
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 import subprocess
 
 os_name = platform.system()

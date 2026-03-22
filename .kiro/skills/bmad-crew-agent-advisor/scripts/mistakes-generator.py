@@ -17,6 +17,8 @@ import sys
 import json
 import re
 from pathlib import Path
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 from datetime import datetime
 
 

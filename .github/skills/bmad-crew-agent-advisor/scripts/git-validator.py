@@ -18,6 +18,8 @@ import sys
 import json
 import argparse
 from pathlib import Path
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 
 def run_git(args: list[str]) -> tuple[int, str, str]:
@@ -111,9 +113,9 @@ def main():
         result = check_clean()
         if args.output == "human":
             if result["clean"]:
-                print("✓ Git working directory is clean")
+                print("Git working directory is clean")
             else:
-                print(f"✗ Git dirty — {result['count']} uncommitted file(s):")
+                print(f"Git dirty — {result['count']} uncommitted file(s):")
                 for f in result["dirty_files"]:
                     print(f"  {f}")
                 sys.exit(1)
@@ -130,9 +132,9 @@ def main():
         result = verify_commit(args.expected_files)
         if args.output == "human":
             if result["verified"]:
-                print("✓ All expected files found in last commit")
+                print("All expected files found in last commit")
             else:
-                print("✗ Missing from last commit:")
+                print("Missing from last commit:")
                 for f in result["missing_from_commit"]:
                     print(f"  {f}")
                 sys.exit(1)
