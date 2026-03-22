@@ -49,7 +49,7 @@ All scripts live at `{project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/sc
 
 **Always run scripts from the project root using the full path. Never use a bare `scripts/` path.**
 
-**Python binary:** Read from `index.md` memory (`Python Binary` field). On first run only: try `python3 --version`; fall back to `python`. Written to `index.md` once and reused every session — never re-detected.
+**Python binary:** Read `Python Binary` from `index.md` memory on every activation. On first run only: invoke `detect-platform.py` (with either `python` or `python3` — the script resolves the correct binary via `sys.executable` regardless). Result written to `index.md` once — never re-detected.
 
 Correct:
 ```
@@ -70,7 +70,13 @@ Load `references/memory-system.md` for memory discipline and structure.
 
 ## On Activation
 
-1. **Detect Python binary** — Check `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/index.md` for a stored `Python Binary` value. If found, use it directly as `{python}` — skip detection. If not found (first run), run `python3 --version`; if it succeeds use `python3`, otherwise use `python`. Store as `{python}` for all script calls this session.
+1. **Resolve Python binary** — Read `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/index.md`. Look for `Python Binary` under `## Platform`.
+   - **Field found**: use it as `{python}`. Done — skip all detection.
+   - **Field absent or file missing**: run the bootstrap script using whichever command the IDE provides — try `python` first, then `python3` if that fails:
+     ```
+     python {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/detect-platform.py
+     ```
+     The script uses `sys.executable` internally — it always detects the correct binary regardless of how it was invoked. Parse the JSON output, store `python_binary` as `{python}` and write both `OS` and `Python Binary` to `index.md` under `## Platform`. This runs once only.
 
 2. **Load config via bmad-init skill** — Store all returned vars:
    - Use `{user_name}` for greeting

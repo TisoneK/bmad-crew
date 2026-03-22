@@ -73,10 +73,15 @@
    - Memory persistence for session state and locked decisions
    ```
 
-5. **Detect platform and Python binary:**
-   Run `python3 --version`. If it succeeds use `python3`; otherwise use `python`.
-   Run `python3 -c "import platform; print(platform.system())"` (or `python`) to get the OS.
-   Store both results — they are written into `index.md` in the next step and never re-detected.
+5. **Detect platform and Python binary (first run only):**
+   Run the bootstrap script — try `python` first, fall back to `python3`:
+   ```
+   python {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/detect-platform.py
+   ```
+   The script uses `sys.executable` to detect the correct binary from the inside — no guessing required.
+   Parse the JSON output: `{"os": "...", "python_binary": "...", "python_version": "..."}`.
+   Store `python_binary` as `{python}` and write both values into `index.md` under `## Platform` (next step).
+   This step runs once and is never repeated.
 
 6. **Create index.md:**
    ```markdown
