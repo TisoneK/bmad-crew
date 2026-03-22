@@ -114,7 +114,7 @@ Every command that produces output files must be followed by a commit before a n
 - code-review (patches) → commit
 - retrospective → commit
 
-**The gate:** Advisor verifies git log shows a commit after each command before instructing the next session open. Run `scripts/git-validator.py --check-commits-after-output` to validate.
+**The gate:** Advisor verifies git log shows a commit after each command before instructing the next session open. Run `{project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/git-validator.py --check-commits-after-output` to validate.
 
 ---
 

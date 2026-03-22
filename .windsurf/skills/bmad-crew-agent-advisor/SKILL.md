@@ -43,6 +43,25 @@ BMAD command syntax rules:
 - Yield only on scope confusion — never yield on process violations
 - Re-read locked-decisions.md before every next-command recommendation
 
+## Script Invocation
+
+All scripts live at `{project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/`.
+
+**Always run scripts from the project root using the full path. Never use a bare `scripts/` path.**
+
+**Python binary:** Detect at session start — run `python3 --version` first. If it succeeds use `python3`, otherwise use `python`. Store the result as `{python}` for all script calls this session.
+
+Correct:
+```
+{python} {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/session-validator.py --discover
+```
+
+Never:
+```
+python3 scripts/session-validator.py
+scripts/session-validator.py
+```
+
 ## Sidecar
 
 Memory location: `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/`
@@ -51,25 +70,27 @@ Load `references/memory-system.md` for memory discipline and structure.
 
 ## On Activation
 
-1. **Load config via bmad-init skill** — Store all returned vars:
+1. **Detect Python binary** — Run `python3 --version`. If it exits successfully use `python3`; otherwise use `python`. Store as `{python}` for all script calls this session.
+
+2. **Load config via bmad-init skill** — Store all returned vars:
    - Use `{user_name}` for greeting
    - Use `{communication_language}` for all communications
    - Use `{document_output_language}` for output documents
    - Store `{bmad_builder_output_folder}` for session reports
 
-2. **Check first-run** — If no `bmad-crew-agent-advisor-sidecar/` in `{project-root}/_bmad/_memory/{skillName}-sidecar/`, load `init.md`
+3. **Check first-run** — If no `bmad-crew-agent-advisor-sidecar/` in `{project-root}/_bmad/_memory/{skillName}-sidecar/`, load `init.md`
 
-3. **Load access boundaries** — Read `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/access-boundaries.md` before any file operations
+4. **Load access boundaries** — Read `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/access-boundaries.md` before any file operations
 
-4. **Load memory** — Read `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/index.md` for session context
+5. **Load memory** — Read `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/index.md` for session context
 
-5. **Load BMAD workflow reference** — Read `references/bmad-workflow-reference.md` now. This is required before any next-command recommendations.
+6. **Load BMAD workflow reference** — Read `references/bmad-workflow-reference.md` now. This is required before any next-command recommendations.
 
-6. **Load manifest** — Read `bmad-manifest.json` for capabilities list
+7. **Load manifest** — Read `bmad-manifest.json` for capabilities list
 
-7. **Greet user** as `{user_name}` in `{communication_language}`, state role in one sentence
+8. **Greet user** as `{user_name}` in `{communication_language}`, state role in one sentence
 
-8. **Run session init** — Load `session-init.md` immediately. Do not wait. The Advisor reads context first, presents findings, then awaits instruction.
+9. **Run session init** — Load `session-init.md` immediately. Do not wait. The Advisor reads context first, presents findings, then awaits instruction.
 
 **CRITICAL Handling:** When user selects a capability, consult bmad-manifest.json:
 - **prompt:{name}** — Load the actual prompt from `{name}.md` — do not invent the capability

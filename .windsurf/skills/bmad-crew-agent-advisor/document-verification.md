@@ -253,7 +253,7 @@ After verification:
 
 ```python
 # document-verifier.py - Automated verification helper
-python scripts/document-verifier.py \
+{python} {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/document-verifier.py \
   --document-type [story|architecture|prd|epics|code-review|retrospective] \
   --file-path [path/to/document] \
   --locked-decisions [path/to/locked-decisions.md] \

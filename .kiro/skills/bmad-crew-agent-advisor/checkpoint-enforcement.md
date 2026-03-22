@@ -9,7 +9,7 @@ Every command that produces output files requires a commit before the next sessi
 
 **Validate automatically using:**
 ```
-python3 scripts/git-validator.py --check-commits-after-output
+{python} {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/git-validator.py --check-commits-after-output
 ```
 
 **Commands covered:**
@@ -40,17 +40,17 @@ The Advisor runs git validation automatically — never asks the Coordinator to 
 
 **On session start:**
 ```
-python3 scripts/git-validator.py --check-clean
+{python} {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/git-validator.py --check-clean
 ```
 
 **Before any phase transition:**
 ```
-python3 scripts/git-validator.py --validate-commits --since-last-checkpoint
+{python} {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/git-validator.py --validate-commits --since-last-checkpoint
 ```
 
 **After Builder claims completion:**
 ```
-python3 scripts/git-validator.py --verify-commit --expected-files [list]
+{python} {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/git-validator.py --verify-commit --expected-files [list]
 ```
 
 Report results directly. If git is dirty: block and give exact commit command. Do not ask the Coordinator to investigate.

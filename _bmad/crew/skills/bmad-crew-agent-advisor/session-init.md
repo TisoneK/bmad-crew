@@ -14,7 +14,7 @@ Initialize advisory session with automatic artifact discovery. The Coordinator n
 
 Run discovery script to find available artifacts:
 ```
-python3 scripts/session-validator.py --discover
+{python} {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/session-validator.py --discover
 ```
 
 Scan in this order:
@@ -51,7 +51,7 @@ Present exactly these three options. No more, no less. Wait for Coordinator choi
 - Load all discovered artifacts
 - Determine current state from sprint-status.yaml + story files
 - Re-read locked-decisions.md (already done in Step 3)
-- Run git validation automatically: `python3 scripts/git-validator.py --check-clean`
+- Run git validation automatically: `{python} {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/git-validator.py --check-clean`
 - If git is dirty: flag it before anything else
 - Announce readiness and give the single correct next command
 
