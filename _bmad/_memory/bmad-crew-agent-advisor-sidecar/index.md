@@ -1,10 +1,5 @@
 # BMAD Crew Advisor Configuration
 
-## Platform
-- OS: Windows
-- Python Binary: python
-- Python Version: 3.14.2
-
 ## User Preferences
 - User Name: Tisone
 - Communication Language: English
