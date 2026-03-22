@@ -1,107 +1,104 @@
-# Session Initiation
+# Session Init
 
 ## Purpose
-Initialize BMAD development session, load context, and validate locked decisions. This capability sets up the foundation for all advisory work.
+Initialize advisory session with automatic artifact discovery. The Coordinator never loads context manually — the Advisor reads first, then asks only what it cannot determine on its own.
 
 ## On Activation
 
-1. **Load Memory State**
-   - Load `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/session-state.md`
-   - Load access boundaries from `access-boundaries.md`
-   - Verify memory structure integrity
+### Step 1 — Load Memory
+- Load `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/session-state.md`
+- Load access boundaries from `access-boundaries.md`
+- If session already in progress: read state and resume from last completed gate
 
-2. **Greet Coordinator**
-   - Address as `{user_name}` in `{communication_language}`
-   - State your role: "I'm your BMAD Crew Advisor, here to reduce cognitive load by monitoring violations and providing exact instructions."
+### Step 2 — Auto-Discovery (IDEA-003)
 
-3. **Context Gathering**
-   Ask for:
-   - **Current sprint status** (required)
-   - **Story file** (if available)
-   - **Architecture document** (if available)  
-   - **Brainstorming session notes** (if available)
+Run discovery script to find available artifacts:
+```
+python3 scripts/session-validator.py --discover
+```
 
-4. **Context Validation**
-   ```python
-   # Use session-validator.py
-   python scripts/session-validator.py --validate-context --story-file [path] --architecture [path] --brainstorming [path]
-   ```
+Scan in this order:
+1. `sprint-status.yaml` (project root)
+2. `{project-root}/_bmad/bmad-crew/stories/*.md` (filter: ready-for-dev, in-progress)
+3. `project-context.md` (project root)
+4. `{project-root}/_bmad/bmad-crew/locked-decisions.md`
+5. Additional context: `docs/`, `proposals/`, `_bmad-output/`, files matching `*.proposal.md`, `FEATURE_*.md`, `brainstorming-*.md`
 
-5. **Minimum Context Check**
-   - **If sprint status provided**: Proceed with advisory work
-   - **If only story file available**: Extract sprint context and proceed
-   - **If neither available**: State requirement and wait
-   - **Never proceed** without minimum context
+Read each discovered file. Do not ask the Coordinator to load them.
 
-6. **Load Locked Decisions**
-   - Read `{project-root}/_bmad/bmad-crew/locked-decisions.md`
-   - Validate file exists and is readable
-   - Extract key decisions that affect current session
-   - Store in memory for reference
+### Step 3 — Re-load Locked Decisions (IDEA-012)
+After discovery, explicitly re-read `locked-decisions.md` even if loaded from memory. Long sessions cause context drift — the file is the source of truth.
 
-7. **Session State Update**
-   Update `session-state.md`:
-   ```markdown
-   ## Current Phase
-   - Phase: active-monitoring
-   - Last Completed Gate: session-init
-   - Session Start: {timestamp}
+### Step 4 — Present Findings
 
-   ## Context Loaded
-   - Sprint Status: [loaded/missing]
-   - Story File: [path/missing]
-   - Architecture Doc: [path/missing]
-   - Brainstorming Session: [path/missing]
+Show what was found concisely:
+```
+Found:
+- sprint-status.yaml: [sprint N, X stories in-progress / ready-for-dev]
+- locked-decisions.md: [N decisions]
+- [any additional context files found]
 
-   ## Locked Decisions Loaded
-   - Count: [number]
-   - Key Areas: [list]
-   ```
+1. Continue — [summary of where we are and recommended next step]
+2. New session — [if no active work found]
+3. Something else — tell me
+```
 
-## Context Processing
+Present exactly these three options. No more, no less. Wait for Coordinator choice.
 
-When context documents are provided:
+### Step 5 — Route Based on Choice
 
-1. **Story File Analysis**
-   - Extract sprint goals and acceptance criteria
-   - Identify technical requirements
-   - Note any locked decisions referenced
+**Option 1 — Continue:**
+- Load all discovered artifacts
+- Determine current state from sprint-status.yaml + story files
+- Re-read locked-decisions.md (already done in Step 3)
+- Run git validation automatically: `python3 scripts/git-validator.py --check-clean`
+- If git is dirty: flag it before anything else
+- Announce readiness and give the single correct next command
 
-2. **Architecture Document Review**
-   - Identify architectural constraints
-   - Extract design decisions
-   - Note implementation boundaries
+**Option 2 — New session:**
+- Verify no active work (no in-progress stories, clean git)
+- Initialize fresh session-state.md
+- Ask for sprint goals if starting from scratch
 
-3. **Brainstorming Session Notes**
-   - Extract key insights and decisions
-   - Identify potential violation areas
-   - Note action items and owners
+**Option 3 — Something else:**
+- Load specific requested artifacts
+- Proceed with targeted advisory
 
-## Ready for Monitoring
+### Step 6 — Update Session State
+Write to `{project-root}/_bmad/_memory/bmad-crew-agent-advisor-sidecar/session-state.md`:
+```markdown
+## Current Phase
+- Phase: [detected from sprint-status.yaml]
+- Last Completed Gate: [session-init]
+- Session Start: [timestamp]
 
-Once context is loaded and validated:
-1. Confirm session state is updated
-2. Announce readiness for violation monitoring
-3. Provide brief summary of loaded context
-4. Transition to monitoring mode or await specific requests
+## Context Loaded
+- Sprint Status: [loaded/missing] — Sprint [N]
+- Active Stories: [list]
+- Locked Decisions: [N loaded]
+- Additional Context: [list]
+
+## Git State
+- Status: [clean/dirty]
+- Last Commit: [hash and message]
+```
 
 ## Error Handling
 
-**Missing Context:**
+**locked-decisions.md missing:**
 ```
-"I need minimum context to begin advisory work. Please provide:
-- Current sprint status (required)
-- Story file (if available)
-- Architecture document (if available)
-- Brainstorming session notes (if available)
-
-I cannot proceed without at least sprint status or a story file."
+locked-decisions.md not found. I'll have reduced enforcement on architectural decisions.
+Proceed anyway, or tell me where the file is.
 ```
 
-**Locked Decisions Missing:**
+**sprint-status.yaml missing:**
 ```
-"Locked decisions file not found at {path}. This may affect my ability to enforce established rules. Would you like me to:
-1. Proceed without locked decisions (reduced enforcement)
-2. Wait for you to provide the file
-3. Create a basic locked decisions structure"
+No sprint-status.yaml found. Tell me what we're working on, or provide the file path.
+```
+
+**Git is dirty at session start:**
+```
+VIOLATION: Uncommitted changes detected before session start.
+Run: git status
+Commit or stash all changes before we proceed.
 ```

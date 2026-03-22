@@ -1,21 +1,21 @@
 # bmad-crew
 
-A BMAD custom module that sits beside the Coordinator during development sessions, guiding every decision and instruction so the Coordinator never has to think about what to tell the Builder.
+A BMAD custom module that sits beside the Coordinator during development sessions, telling them exactly what to type next so they never have to think about process management again.
 
 ---
 
 ## The Problem
 
-In a BMAD multi-agent session, the Coordinator (developer) directs the Builder (Executor) through every phase of development. This means the Coordinator must constantly:
+In a BMAD multi-agent session, the Coordinator directs the Builder through every phase of development. This means the Coordinator must constantly:
 
 - Know which BMAD command to run next
 - Catch when the Builder self-certifies without committing
-- Remember to verify git status before opening new sessions
+- Verify git status before opening new sessions
 - Decide which option to pick when the Builder presents choices
 - Produce summary files at phase boundaries
 - Track locked decisions so the Builder doesn't re-open them
 
-This cognitive overhead accumulates. The Coordinator ends up spending more time managing the process than building the product.
+This cognitive overhead accumulates. The Coordinator ends up managing process instead of building product.
 
 ---
 
@@ -25,15 +25,32 @@ This cognitive overhead accumulates. The Coordinator ends up spending more time 
 Advisor → Coordinator (developer) ← Builder
 ```
 
-bmad-crew adds an **Advisor** to the session. The Advisor sits beside the Coordinator and handles the process management layer:
+bmad-crew adds an **Advisor** agent to the session. The Advisor reads context automatically, validates every Builder output before the Coordinator acts on it, enforces every checkpoint, and gives one precise instruction at a time.
 
-- Tells the Coordinator exactly what to tell the Builder at each step
-- Catches process violations before the Coordinator notices them
-- Enforces checkpoints so the Coordinator never skips a gate
-- Tracks locked decisions so nothing gets re-opened
-- Verifies Builder claims independently before the Coordinator acts on them
+The Coordinator's only job becomes moving context between agents.
 
-The Coordinator's only job becomes moving context between agents. The Advisor handles the rest.
+---
+
+## What's New in v0.2.0
+
+v0.2.0 implements all 14 improvements identified from real session usage. The Advisor now:
+
+| Improvement | What changed |
+|-------------|-------------|
+| **Auto-discovery** | Reads sprint-status.yaml, story files, locked decisions, and project context automatically on activation — no manual loading |
+| **Document verification gates** | Reads and validates every Builder output before the Coordinator acts. Never accepts a completion claim without reading the file |
+| **Full lifecycle commit checkpoints** | Enforces commits after every output-producing command (brainstorming, PRD, architecture, epics, story, dev-story, code-review, retrospective) — not just dev-story |
+| **BMAD workflow knowledge** | Knows the complete command sequence, which commands need a new chat, which take no arguments, and what each command produces |
+| **Output format discipline** | One line of plain text + command in a code block. No options menus. No step-by-step when one line covers it |
+| **Git auto-validation** | Runs git-validator.py directly — never asks the Coordinator to run git commands and paste back |
+| **Code review escalation paths** | Handles patch / defer / intent_gap / bad_spec with distinct escalation for each. Blocks progression on bad_spec |
+| **Pushback rules** | Holds firm on process violations. Yields only on genuine scope confusion (finding belongs to a future story) |
+| **Locked decisions re-reference** | Re-reads locked-decisions.md before every next-command recommendation — not just at session start |
+| **Phase summary files** | Mandatory SUM-00X summary before any "open a new chat" instruction |
+| **Session-end detection** | Detects session endings beyond phase boundaries and triggers summary before exit |
+| **Mistakes files** | Auto-generates ADVISOR_SESSION_MISTAKES_NNN.md after each completed story cycle |
+| **Scope detection** | Distinguishes current-story scope from future-story scope in code review findings |
+| **Self-doubt flag** | Flags complex validation results (intent_gap, bad_spec) for Coordinator review before action |
 
 ---
 
@@ -44,96 +61,138 @@ _bmad/crew/
 ├── config.yaml
 ├── module-help.csv
 └── skills/
-    ├── bmad-crew-agent-advisor/         # Main Advisor agent (start here)
+    ├── bmad-crew-agent-advisor/         # Main Advisor agent — start here
+    │   ├── SKILL.md
+    │   ├── session-init.md              # Auto-discovery + context loading
+    │   ├── violation-detection.md       # Role, process, quality violations + pushback rules
+    │   ├── checkpoint-enforcement.md    # Full lifecycle gates + summary files + session-end
+    │   ├── instruction-generation.md    # One-line output format + escalation paths
+    │   ├── document-verification.md     # Read-before-validate for all Builder outputs
+    │   ├── mistakes-file.md             # Per-cycle ADVISOR_SESSION_MISTAKES_NNN.md
+    │   ├── save-memory.md
+    │   ├── references/
+    │   │   ├── bmad-workflow-reference.md  # Full BMAD command sequence and syntax rules
+    │   │   ├── memory-system.md
+    │   │   └── access-boundaries.md
+    │   └── scripts/
+    │       ├── git-validator.py         # Git state validation (runs automatically)
+    │       ├── session-validator.py     # Artifact discovery + context validation
+    │       ├── mistakes-generator.py    # Mistakes file generation
+    │       ├── document-verifier.py     # Document quality validation
+    │       └── run-tests.sh             # Full test suite
     ├── bmad-crew-advisor/               # Advisor workflow skill
-    ├── bmad-crew-session-validator/     # Detects role, process, quality violations
-    ├── bmad-crew-checkpoint-enforcer/   # Validates commits, summaries, code reviews
-    └── bmad-crew-locked-decisions/      # Manages locked decisions document
+    ├── bmad-crew-session-validator/     # Session state validator
+    ├── bmad-crew-checkpoint-enforcer/   # Checkpoint compliance enforcer
+    └── bmad-crew-locked-decisions/      # Locked decisions manager
 ```
 
 ---
 
 ## Installation
 
-### Step 1 — Copy the module into your project
+### Installing into an existing BMAD project
 
-```
-your-project/
-└── _bmad/
-    └── crew/        ← copy from bmad-crew/_bmad/crew/
+#### Step 1 — Copy the module
+
+```bash
+cp -r bmad-crew/_bmad/crew/ your-project/_bmad/crew/
 ```
 
-### Step 2 — Copy skills to your IDE
+#### Step 2 — Copy skills to your IDE
 
 **Windsurf:**
+```bash
+cp -r bmad-crew/.windsurf/skills/bmad-crew-* your-project/.windsurf/skills/
 ```
-.windsurf/skills/bmad-crew-agent-advisor/
-.windsurf/skills/bmad-crew-advisor/
-.windsurf/skills/bmad-crew-session-validator/
-.windsurf/skills/bmad-crew-checkpoint-enforcer/
-.windsurf/skills/bmad-crew-locked-decisions/
+
+**Kiro:**
+```bash
+cp -r bmad-crew/.kiro/skills/bmad-crew-* your-project/.kiro/skills/
+```
+
+**GitHub Copilot:**
+```bash
+cp -r bmad-crew/.github/skills/bmad-crew-* your-project/.github/skills/
 ```
 
 **Kilo Code:**
-```
-.kilocode/skills/   ← same structure
+```bash
+cp -r bmad-crew/.kiro/skills/bmad-crew-* your-project/.kilocode/skills/
 ```
 
-### Step 3 — Register the module
+#### Step 3 — Register the module
 
-Add to `_bmad/_config/manifest.yaml`:
+Add to your project's `_bmad/_config/manifest.yaml`:
 
 ```yaml
 - name: crew
-  version: 0.1.0
+  version: 0.2.0
   source: local
   npmPackage: null
   repoUrl: null
 ```
 
-Add skills to `_bmad/_config/bmad-help.csv` — see `_bmad/crew/module-help.csv` for the entries.
+#### Step 4 — Register skills
 
----
+Append the contents of `_bmad/crew/module-help.csv` to your project's `_bmad/_config/bmad-help.csv`.
 
-## Exporting to Another Project
+Add to `_bmad/_config/skill-manifest.csv`:
 
-To use bmad-crew in an existing BMAD project:
+```csv
+"bmad-crew-agent-advisor","bmad-crew-agent-advisor","Vigilant BMAD session supervisor with memory.","crew","_bmad/crew/skills/bmad-crew-agent-advisor/SKILL.md","true"
+"bmad-crew-advisor","bmad-crew-advisor","Interactive session advisor for BMAD workflow monitoring.","crew","_bmad/crew/skills/bmad-crew-advisor/SKILL.md","true"
+"bmad-crew-session-validator","bmad-crew-session-validator","Validates BMAD session state for violations.","crew","_bmad/crew/skills/bmad-crew-session-validator/SKILL.md","true"
+"bmad-crew-checkpoint-enforcer","bmad-crew-checkpoint-enforcer","Enforces BMAD checkpoints and completion requirements.","crew","_bmad/crew/skills/bmad-crew-checkpoint-enforcer/SKILL.md","true"
+"bmad-crew-locked-decisions","bmad-crew-locked-decisions","Manages locked decisions and pushback rules.","crew","_bmad/crew/skills/bmad-crew-locked-decisions/SKILL.md","false"
+```
 
-### 1. Copy the module
-Copy `_bmad/crew/` and `_bmad/bmad-crew/` from this repo into your project's `_bmad/` folder.
+#### Step 5 — Restart your IDE
 
-### 2. Copy the IDE skills
-Copy `.windsurf/skills/bmad-crew-*` into your project's `.windsurf/skills/`.
-For Kilo Code, copy into `.kilocode/skills/`.
+Restart so it discovers the new skills, then activate:
 
-### 3. Register the module
-Add the crew entry to your project's `_bmad/_config/manifest.yaml`
-and append the skill entries from `_bmad/crew/module-help.csv` to your project's
-`_bmad/_config/bmad-help.csv`.
-
-### 4. Restart your IDE
-Restart your IDE so it discovers the new skills from the skills directory.
-
-### 5. Activate
-Open a new chat and run `/bmad-crew-agent-advisor`.
+```
+/bmad-crew-agent-advisor
+```
 
 ---
 
 ## Usage
 
-At the start of any BMAD session, activate the Advisor in a separate chat:
+Open a dedicated chat for the Advisor at the start of every BMAD session:
 
 ```
 /bmad-crew-agent-advisor
 ```
 
 The Advisor will:
-1. Load identity and memory
-2. Greet the Coordinator by name
-3. Ask for minimum context (sprint status or story file)
-4. Begin guiding the Coordinator once context is loaded
+1. Automatically scan for artifacts (sprint status, story files, locked decisions, project context)
+2. Present what it found and confirm the current state
+3. Run git validation
+4. Give you the single correct next command
 
-From that point, every instruction the Coordinator gives to the Builder comes from the Advisor — not from the Coordinator having to figure it out themselves.
+From that point, every instruction you give the Builder comes from the Advisor. You move context. The Advisor handles everything else.
+
+### What the output looks like
+
+```
+Story 3.1 validated — no violations. Commit the file, then open a new chat and run:
+
+/bmad-bmm-dev-story
+```
+
+No options. No numbered lists. One line of context, one command.
+
+### Violation handling
+
+When something is wrong:
+
+```
+VIOLATION: Process — Builder self-certified without commit
+
+What happened: Builder said "done" but git log shows no new commit.
+Rule: Never accept completion claims without commit hash verification.
+Required action: Run git log --oneline -3 and paste the output here.
+```
 
 ---
 
@@ -141,49 +200,72 @@ From that point, every instruction the Coordinator gives to the Builder comes fr
 
 | Command | Purpose |
 |---------|---------|
-| `/bmad-crew-agent-advisor` | Main Advisor — start here |
-| `/bmad-crew-advisor` | Advisor workflow skill |
-| `/bmad-crew-session-validator` | Validate session state |
-| `/bmad-crew-checkpoint-enforcer` | Enforce checkpoint compliance |
-| `/bmad-crew-locked-decisions` | Manage locked decisions |
+| `/bmad-crew-agent-advisor` | Main Advisor with memory — **start here** |
+| `/bmad-crew-advisor` | Advisor workflow (stateless) |
+| `/bmad-crew-session-validator` | Validate session state on demand |
+| `/bmad-crew-checkpoint-enforcer` | Enforce checkpoint compliance on demand |
+| `/bmad-crew-locked-decisions` | Manage locked decisions document |
 
 ---
 
-## Core Rules
+## Absolute Rules
 
-The Advisor operates under three absolute rules that cannot be overridden:
+The Advisor operates under five rules that cannot be overridden:
 
-1. **NEVER confirm a document without reading it**
-2. **NEVER accept Builder git claims without log verification**
-3. **NEVER cross the Coordinator/Builder boundary**
+1. **Never confirm a document without reading it**
+2. **Never accept git claims without log verification**
+3. **Never cross the Coordinator/Builder boundary**
+4. **Never present options when the correct next step is known**
+5. **Yield only on scope confusion — never on process violations**
+
+---
+
+## Automated Scripts
+
+The Advisor runs these scripts directly. The Coordinator never needs to run them manually.
+
+| Script | Runs when |
+|--------|-----------|
+| `git-validator.py` | Session start, every checkpoint, after Builder completion claims |
+| `session-validator.py` | Activation — discovers all project artifacts automatically |
+| `mistakes-generator.py` | After each completed story cycle |
+| `document-verifier.py` | After any BMAD command produces output |
+
+Run the test suite to verify your installation:
+
+```bash
+bash _bmad/crew/skills/bmad-crew-agent-advisor/scripts/run-tests.sh
+```
 
 ---
 
 ## Works With
 
 - Windsurf
-- Kilo Code
+- Kiro
 - GitHub Copilot
+- Kilo Code
 - Any IDE supported by BMAD v6
 
 ---
 
-## Version
+## Version History
 
-**v0.1.0** — MVP. Covers the Advisor agent and supporting utility skills.
+**v0.2.0** — Full implementation. All 14 improvements from session experience. Auto-discovery, document verification, full lifecycle checkpoints, workflow knowledge, output format discipline, git automation, code review escalation, pushback rules, locked decisions re-reference, phase summaries, session-end detection, mistakes files, scope detection, self-doubt flag.
 
-Post-MVP roadmap:
-- Executor module
-- Coordinator module
-- Specialist module
+**v0.1.0** — MVP. Core Advisor agent with basic violation detection, checkpoint enforcement, and locked decisions management.
+
+### Roadmap
+
+- Executor module — automates Builder-side execution
+- Coordinator module — handles Coordinator-side orchestration
 - npm publishing for BMAD installer integration
 
 ---
 
 ## Built With
 
-- [BMAD Method v6](https://docs.bmad-method.org) — BMad Builder (bmb) module
-- Built using `/bmad-workflow-builder`, `/bmad-agent-builder`, `/bmad-module-builder`
+- [BMAD Method v6](https://docs.bmad-method.org) — built using `/bmad-agent-builder`
 
 ---
 
