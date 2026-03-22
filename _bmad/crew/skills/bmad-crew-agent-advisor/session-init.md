@@ -10,40 +10,53 @@ Initialize advisory session with automatic artifact discovery. The Coordinator n
 - Load access boundaries from `access-boundaries.md`
 - If session already in progress: read state and resume from last completed gate
 
-### Step 2 — Auto-Discovery (IDEA-003)
+### Step 2 — Auto-Discovery and File Reading (IDEA-003)
 
 Run discovery script to find available artifacts:
 ```
 {python} {project-root}/_bmad/crew/skills/bmad-crew-agent-advisor/scripts/session-validator.py --discover
 ```
 
-Scan in this order:
-1. `sprint-status.yaml` (project root)
-2. `{project-root}/_bmad/bmad-crew/stories/*.md` (filter: ready-for-dev, in-progress)
-3. `project-context.md` (project root)
-4. `{project-root}/_bmad/bmad-crew/locked-decisions.md`
-5. Additional context: `docs/`, `proposals/`, `_bmad-output/`, files matching `*.proposal.md`, `FEATURE_*.md`, `brainstorming-*.md`
+The script returns a list of file paths. **You must open and read each file — not just list their names.**
 
-Read each discovered file. Do not ask the Coordinator to load them.
+**Read in this priority order — do not skip any that exist:**
+
+1. `sprint-status.yaml` (project root) — read fully, extract sprint number and story statuses
+2. `{project-root}/_bmad/bmad-crew/stories/*.md` — read each story with status ready-for-dev or in-progress
+3. `project-context.md` (project root) — read fully
+4. `{project-root}/_bmad/bmad-crew/locked-decisions.md` — read fully
+5. `_bmad-output/planning-artifacts/*.md` — read each file found (PRD, product brief, architecture)
+6. `_bmad-output/brainstorming/*.md` — read the most recent session
+7. Any `docs/`, `proposals/`, files matching `*.proposal.md`, `FEATURE_*.md`
+
+**After reading each file, extract:**
+- What phase is the project in (brainstorming / planning / implementation)?
+- What is the most recent completed artifact?
+- What is the logical next step?
+
+Do not summarise as "N files found". Name each file you read and state what it contains in one line.
 
 ### Step 3 — Re-load Locked Decisions (IDEA-012)
 After discovery, explicitly re-read `locked-decisions.md` even if loaded from memory. Long sessions cause context drift — the file is the source of truth.
 
 ### Step 4 — Present Findings
 
-Show what was found concisely:
+Show what was read (not just found) with one-line summaries:
 ```
-Found:
-- sprint-status.yaml: [sprint N, X stories in-progress / ready-for-dev]
-- locked-decisions.md: [N decisions]
-- [any additional context files found]
+Read:
+- sprint-status.yaml: [found/missing] — [sprint N, X stories / no active sprint]
+- locked-decisions.md: [found/missing] — [N decisions / empty]
+- prd.md: [one-line summary of what it contains]
+- product-brief-*.md: [one-line summary]
+- [each additional file read with one-line summary]
 
-1. Continue — [summary of where we are and recommended next step]
-2. New session — [if no active work found]
+1. Continue — [specific summary: phase, last artifact, recommended next command]
+2. New session — [only if genuinely no artifacts or all work complete]
 3. Something else — tell me
 ```
 
-Present exactly these three options. No more, no less. Wait for Coordinator choice.
+The option 1 summary must be specific — name the phase and the exact next command.
+Present exactly these three options. Wait for Coordinator choice.
 
 ### Step 5 — Route Based on Choice
 
